@@ -7,8 +7,8 @@ const app = express();
 const PORT = 3000;
 const DATA_FILE = path.join(__dirname, 'students.json');
 
-// Simple session storage (in production, use Redis or database)
-const sessions = new Map();
+const crypto = require('crypto');
+const SECRET_KEY = 'gce-student-management-system-secret-key'; // In production, use process.env.SECRET_KEY
 
 // Demo credentials - Multiple Admins with Department Access
 const ADMIN_CREDENTIALS = [
@@ -108,6 +108,28 @@ function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
+// Helper to sign token
+function signToken(payload) {
+    const data = Buffer.from(JSON.stringify(payload)).toString('base64');
+    const signature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('base64');
+    return `${data}.${signature}`;
+}
+
+// Helper to verify token
+function verifyToken(token) {
+    try {
+        const [data, signature] = token.split('.');
+        const expectedSignature = crypto.createHmac('sha256', SECRET_KEY).update(data).digest('base64');
+
+        if (signature === expectedSignature) {
+            return JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
+        }
+        return null;
+    } catch (e) {
+        return null;
+    }
+}
+
 // Validation middleware
 function validateStudent(req, res, next) {
     const { firstName, lastName, email, phone, course, year, cgpa } = req.body;
@@ -156,11 +178,16 @@ function generateToken() {
 function verifySession(req, res, next) {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
-    if (!token || !sessions.has(token)) {
+    if (!token) {
         return res.status(401).json({ error: 'Unauthorized. Please login.' });
     }
 
-    req.user = sessions.get(token);
+    const user = verifyToken(token);
+    if (!user) {
+        return res.status(401).json({ error: 'Invalid or expired session.' });
+    }
+
+    req.user = user;
     next();
 }
 
@@ -176,7 +203,6 @@ app.post('/api/auth/login', async (req, res) => {
             const admin = ADMIN_CREDENTIALS.find(a => a.username === username && a.password === password);
 
             if (admin) {
-                const token = generateToken();
                 const sessionData = {
                     role: 'admin',
                     adminType: admin.type,
@@ -186,7 +212,7 @@ app.post('/api/auth/login', async (req, res) => {
                     color: admin.color
                 };
 
-                sessions.set(token, sessionData);
+                const token = signToken(sessionData);
 
                 res.json({
                     success: true,
@@ -209,7 +235,6 @@ app.post('/api/auth/login', async (req, res) => {
             const expectedPassword = `student${student.lastName}`;
 
             if (password === expectedPassword) {
-                const token = generateToken();
                 const sessionData = {
                     role: 'student',
                     username: `${student.firstName} ${student.lastName}`,
@@ -217,7 +242,7 @@ app.post('/api/auth/login', async (req, res) => {
                     studentId: student.id
                 };
 
-                sessions.set(token, sessionData);
+                const token = signToken(sessionData);
 
                 res.json({
                     success: true,
@@ -236,10 +261,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.post('/api/auth/logout', (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (token) {
-        sessions.delete(token);
-    }
+    // Stateless logout - client discards token
     res.json({ success: true, message: 'Logged out successfully' });
 });
 

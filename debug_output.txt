@@ -1,0 +1,9 @@
+Total students: 320
+adminmain: sees all 320 students
+admin-it ('BE - Information Technology'): sees 46 students
+admin-cse ('BE - Computer Science and Engineering'): sees 53 students
+admin-ece ('BE - Electronics and Communication Engineering'): sees 41 students
+admin-eee ('BE - Electrical and Electronics Engineering'): sees 44 students
+admin-mech ('BE - Mechanical Engineering'): sees 54 students
+admin-auto ('BE - Automobile Engineering'): sees 47 students
+admin-civil ('BE - Civil Engineering'): sees 35 students
