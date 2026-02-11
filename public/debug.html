@@ -85,7 +85,7 @@
         // Check student data
         async function checkStudents() {
             try {
-                const response = await fetch('http://localhost:3000/api/students');
+                const response = await fetch('/api/students');
                 const students = await response.json();
 
                 const session = localStorage.getItem('userSession');
