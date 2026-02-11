@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        h2 {
+            color: #666;
+            margin-top: 0;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        button {
+            background: #0984E3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0770c4;
+        }
+
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .credential {
+            padding: 10px;
+            margin: 5px 0;
+            background: #e8f4f8;
+            border-left: 3px solid #0984E3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔧 Admin Login Diagnostic Tool</h1>
+
+    <div class="test-box">
+        <h2>Test 1: Main Admin Login</h2>
+        <div class="credential">
+            <strong>Username:</strong> adminmain<br>
+            <strong>Password:</strong> admingce
+        </div>
+        <button onclick="testLogin('adminmain', 'admingce')">Test Main Admin</button>
+        <div id="result-main"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Test 2: ECE Admin Login</h2>
+        <div class="credential">
+            <strong>Username:</strong> admin-ece<br>
+            <strong>Password:</strong> adminece123
+        </div>
+        <button onclick="testLogin('admin-ece', 'adminece123')">Test ECE Admin</button>
+        <div id="result-ece"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Test 3: IT Admin Login</h2>
+        <div class="credential">
+            <strong>Username:</strong> admin-it<br>
+            <strong>Password:</strong> adminit123
+        </div>
+        <button onclick="testLogin('admin-it', 'adminit123')">Test IT Admin</button>
+        <div id="result-it"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Server Status</h2>
+        <button onclick="checkServer()">Check Server Status</button>
+        <div id="server-status"></div>
+    </div>
+
+    <script>
+        async function testLogin(username, password) {
+            const resultId = username === 'adminmain' ? 'result-main' :
+                username === 'admin-ece' ? 'result-ece' : 'result-it';
+            const resultDiv = document.getElementById(resultId);
+
+            resultDiv.innerHTML = '<p>Testing login...</p>';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                        role: 'admin'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ LOGIN SUCCESSFUL!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ LOGIN FAILED</p>
+                        <p>Error: ${data.error}</p>
+                        <p><strong>This means the server hasn't been restarted with new credentials!</strong></p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ CONNECTION ERROR</p>
+                    <p>${error.message}</p>
+                    <p><strong>Make sure the server is running on http://localhost:3000</strong></p>
+                `;
+            }
+        }
+
+        async function checkServer() {
+            const statusDiv = document.getElementById('server-status');
+            statusDiv.innerHTML = '<p>Checking server...</p>';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/students');
+                if (response.ok) {
+                    statusDiv.innerHTML = '<p class="success">✅ Server is running!</p>';
+                } else {
+                    statusDiv.innerHTML = '<p class="error">⚠️ Server responded but with error</p>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <p class="error">❌ Server is NOT running!</p>
+                    <p>Please start the server with: npm start</p>
+                `;
+            }
+        }
+
+        // Auto-check server on load
+        window.onload = () => checkServer();
+    </script>
+</body>
+
+</html>

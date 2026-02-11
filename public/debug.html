@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Debug Student Login</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #1E272E;
+            color: #F5F6FA;
+        }
+
+        .info {
+            background: #2d3a42;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #0984E3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0770c4;
+        }
+
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Student Login Debug Tool</h1>
+
+    <div class="info">
+        <h3>Current Session Data:</h3>
+        <pre id="session-data">Loading...</pre>
+    </div>
+
+    <div class="info">
+        <h3>Actions:</h3>
+        <button onclick="clearSession()">Clear Session & Reload</button>
+        <button onclick="checkStudents()">Check Student Data</button>
+    </div>
+
+    <div class="info">
+        <h3>Student Data Check:</h3>
+        <pre id="student-check">Click "Check Student Data" button</pre>
+    </div>
+
+    <script>
+        // Display current session
+        function displaySession() {
+            const session = localStorage.getItem('userSession');
+            if (session) {
+                try {
+                    const data = JSON.parse(session);
+                    document.getElementById('session-data').textContent = JSON.stringify(data, null, 2);
+                } catch (e) {
+                    document.getElementById('session-data').textContent = 'Invalid session data: ' + session;
+                }
+            } else {
+                document.getElementById('session-data').textContent = 'No session found';
+            }
+        }
+
+        // Clear session
+        function clearSession() {
+            localStorage.removeItem('userSession');
+            alert('Session cleared! Redirecting to login...');
+            window.location.href = 'login.html';
+        }
+
+        // Check student data
+        async function checkStudents() {
+            try {
+                const response = await fetch('http://localhost:3000/api/students');
+                const students = await response.json();
+
+                const session = localStorage.getItem('userSession');
+                let sessionData = null;
+                if (session) {
+                    sessionData = JSON.parse(session);
+                }
+
+                let output = `Total students in database: ${students.length}\n\n`;
+
+                if (sessionData && sessionData.role === 'student') {
+                    output += `Looking for student ID: ${sessionData.studentId}\n\n`;
+
+                    const myStudent = students.find(s => s.id === sessionData.studentId);
+                    if (myStudent) {
+                        output += `✅ FOUND YOUR RECORD:\n`;
+                        output += JSON.stringify(myStudent, null, 2);
+                    } else {
+                        output += `❌ YOUR RECORD NOT FOUND!\n\n`;
+                        output += `First 3 student IDs in database:\n`;
+                        students.slice(0, 3).forEach(s => {
+                            output += `- ${s.id} (${s.firstName} ${s.lastName})\n`;
+                        });
+                    }
+                } else {
+                    output += 'Not logged in as student\n\n';
+                    output += `First 3 students:\n`;
+                    students.slice(0, 3).forEach(s => {
+                        output += `- ${s.firstName} ${s.lastName} (${s.email})\n`;
+                    });
+                }
+
+                document.getElementById('student-check').textContent = output;
+            } catch (error) {
+                document.getElementById('student-check').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Initialize
+        displaySession();
+    </script>
+</body>
+
+</html>

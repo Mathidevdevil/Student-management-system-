@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .color-test {
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .color-box {
+            padding: 40px 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 3px solid;
+        }
+
+        .color-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .color-code {
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .electric-blue {
+            background: #0984E3;
+            color: white;
+            border-color: #0984E3;
+        }
+
+        .night-black {
+            background: #1E272E;
+            color: white;
+            border-color: #1E272E;
+        }
+
+        .cyan-neon {
+            background: #00CEC9;
+            color: #1E272E;
+            border-color: #00CEC9;
+        }
+
+        .cloud-white {
+            background: #F5F6FA;
+            color: #1E272E;
+            border-color: #1E272E;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .theme-info {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="color-test">
+        <h1>🎨 Student Management System - Color Palette</h1>
+
+        <div class="theme-info">
+            <p><strong>Current Theme:</strong> <span id="current-theme">Loading...</span></p>
+            <button class="btn btn-primary" onclick="toggleTheme()">Toggle Theme</button>
+        </div>
+
+        <div class="color-grid">
+            <div class="color-box electric-blue">
+                <div class="color-name">Electric Blue</div>
+                <div class="color-code">#0984E3</div>
+                <div style="margin-top: 10px;">30% - Secondary/Accent</div>
+            </div>
+
+            <div class="color-box night-black">
+                <div class="color-name">Night Black</div>
+                <div class="color-code">#1E272E</div>
+                <div style="margin-top: 10px;">60% - Primary Background</div>
+            </div>
+
+            <div class="color-box cyan-neon">
+                <div class="color-name">Cyan Neon</div>
+                <div class="color-code">#00CEC9</div>
+                <div style="margin-top: 10px;">10% - Highlights</div>
+            </div>
+
+            <div class="color-box cloud-white">
+                <div class="color-name">Cloud White</div>
+                <div class="color-code">#F5F6FA</div>
+                <div style="margin-top: 10px;">Neutral - Text/Light BG</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; text-align: center;">
+            <a href="index.html" class="btn btn-primary">← Back to Dashboard</a>
+            <a href="login.html" class="btn btn-secondary">Go to Login</a>
+        </div>
+    </div>
+
+    <script>
+        function updateThemeDisplay() {
+            const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+            document.getElementById('current-theme').textContent = theme.toUpperCase();
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeDisplay();
+        }
+
+        // Initialize
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeDisplay();
+    </script>
+</body>
+
+</html>
