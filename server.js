@@ -81,7 +81,12 @@ const ADMIN_CREDENTIALS = [
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Explicitly serve index.html for root if static doesn't catch it automatically
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Helper function to read students data
 async function readStudents() {
@@ -423,7 +428,11 @@ app.get('/api/statistics', verifySession, async (req, res) => {
     }
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Student Management System server running on http://localhost:${PORT}`);
-});
+// Start server if not in Vercel environment
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Student Management System server running on http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;
